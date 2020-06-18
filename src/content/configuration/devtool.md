@@ -33,34 +33,32 @@ T> 你可以直接使用 `SourceMapDevToolPlugin`/`EvalSourceMapDevToolPlugin` �
 
 devtool                                  | 构建速度 | 重新构建速度 | 生产环境 | 品质(quality)
 ---------------------------------------- | ------- | ------- | ---------- | -----------------------------
-(none)                                   | +++     | +++     | yes        | 打包后的代码
-eval                                     | +++     | +++     | no         | 生成后的代码
-eval-cheap-source-map                    | +       | ++      | no         | 转换过的代码（仅限行）
-eval-cheap-module-source-map             | o       | ++      | no         | 原始源代码（仅限行）
-eval-source-map                          | --      | +       | no         | 原始源代码
+(none)                                   | 非常快速 | 非常快速  | yes        | 打包后的代码
+eval                                     | 非常快速 | 非常快速  | no         | 生成后的代码
+eval-cheap-source-map                    | 比较快   | 快速     | no         | 转换过的代码（仅限行）
+eval-cheap-module-source-map             | 中等     | 快速     | no         | 原始源代码（仅限行）
+eval-source-map                          | 慢      | 比较快   | no         | 原始源代码
 eval-nosources-source-map                |         |         |            |
 eval-nosources-cheap-source-map          |         |         |            |
 eval-nosources-cheap-module-source-map   |         |         |            |
-cheap-source-map                         | +       | o       | yes        | 转换过的代码（仅限行）
-cheap-module-source-map                  | o       | -       | yes        | 原始源代码（仅限行）
-inline-cheap-source-map                  | +       | o       | no         | 转换过的代码（仅限行）
-inline-cheap-module-source-map           | o       | -       | no         | 原始源代码（仅限行）
-inline-source-map                        | --      | --      | no         | 原始源代码
+cheap-source-map                         | 比较快   | 中等     | yes        | 转换过的代码（仅限行）
+cheap-module-source-map                  | 中等     | 比较慢   | yes        | 原始源代码（仅限行）
+inline-cheap-source-map                  | 比较快   | 中等     | no         | 转换过的代码（仅限行）
+inline-cheap-module-source-map           | 中等     | 比较慢   | no         | 原始源代码（仅限行）
+inline-source-map                        | 慢      | 慢       | no         | 原始源代码
 inline-nosources-source-map              |         |         |            |
 inline-nosources-cheap-source-map        |         |         |            |
 inline-nosources-cheap-module-source-map |         |         |            |
-source-map                               | --      | --      | yes        | 原始源代码
-hidden-source-map                        | --      | --      | yes        | 原始源代码
+source-map                               | 慢      | 慢       | yes        | 原始源代码
+hidden-source-map                        | 慢      | 慢       | yes        | 原始源代码
 hidden-nosources-source-map              |         |         |            |
 hidden-nosources-cheap-source-map        |         |         |            |
 hidden-nosources-cheap-module-source-map |         |         |            |
 hidden-cheap-source-map                  |         |         |            |
 hidden-cheap-module-source-map           |         |         |            |
-nosources-source-map                     | --      | --      | yes        | 无源代码内容
+nosources-source-map                     | 慢      | 慢       | yes        | 无源代码内容
 nosources-cheap-source-map               |         |         |            |
 nosources-cheap-module-source-map        |         |         |            |
-
-T> `+++` 非常快速, `++` 快速, `+` 比较快, `o` 中等, `-` 比较慢, `--` 慢
 
 T> 验证 devtool 名称时， 我们期望使用某种模式， 注意不要混淆 devtool 字符串的顺序， 模式是： `[inline-|hidden-|eval-][nosources-][cheap-[module-]]source-map`.
 
