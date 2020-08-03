@@ -6,13 +6,13 @@ repo: https://github.com/webpack-contrib/thread-loader
 ---
 Runs the following loaders in a worker pool.
 
-## 安装
+## 安装 {#安装}
 
 ```bash
 npm install --save-dev thread-loader
 ```
 
-## 用法
+## 用法 {#用法}
 
 把此 loader 放置在其他 loader 之前， 放置在此 loader 之后的 loader 就会在一个单独的 worker 池中运行。
 
@@ -26,7 +26,7 @@ npm install --save-dev thread-loader
 
 请仅在耗时的 loader 上使用!
 
-## 示例
+## 示例 {#示例}
 
 **webpack.config.js**
 
@@ -112,7 +112,7 @@ threadLoader.warmup({
 ```
 
 
-## Maintainers
+## Maintainers {#maintainers}
 
 <table>
   <tbody>
