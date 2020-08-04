@@ -14,17 +14,17 @@ npm install --save-dev thread-loader
 
 ## 用法 {#usage}
 
-把此 loader 放置在其他 loader 之前， 放置在此 loader 之后的 loader 就会在一个单独的 worker 池中运行。
+使用时，需将此 loader 放置在其他 loader 之前。放置在此 loader 之后的 loader 会在一个独立的 worker 池中运行。
 
 在 worker 池中运行的 loader 是受到限制的。例如：
 
-* 这些 loader 不能产生新的文件。
-* 这些 loader 不能使用定制的 loader API（也就是说，通过插件）。
-* 这些 loader 无法获取 webpack 的选项设置。
+* 这些 loader 不能生成新的文件。
+* 这些 loader 不能使用自定义的 loader API（也就是说，通过插件来自定义）。
+* 这些 loader 无法获取 webpack 的配置。
 
-每个 worker 都是一个单独的有 600ms 限制的 node.js 进程。同时跨进程的数据交换也会被限制。
+每个 worker 都是一个独立的 node.js 进程，其开销大约为 600ms 左右。同时会限制跨进程的数据交换。
 
-请仅在耗时的 loader 上使用!
+请仅在耗时的操作中使用此 loader！
 
 ## 示例 {#examples}
 
@@ -94,7 +94,7 @@ use: [
 
 可以通过预警 worker 池来防止启动 worker 时的高延时。
 
-这会启动池内最大数量的 worker 并把指定的模块载入 node.js 的模块缓存中。
+这会启动池内最大数量的 worker 并把指定的模块加载到 node.js 的模块缓存中。
 
 ``` js
 const threadLoader = require('thread-loader');
