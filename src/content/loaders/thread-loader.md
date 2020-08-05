@@ -19,7 +19,7 @@ npm install --save-dev thread-loader
 在 worker 池中运行的 loader 是受到限制的。例如：
 
 * 这些 loader 不能生成新的文件。
-* 这些 loader 不能使用自定义的 loader API（也就是说，通过插件来自定义）。
+* 这些 loader 不能使用自定义的 loader API（也就是说，不能通过插件来自定义）。
 * 这些 loader 无法获取 webpack 的配置。
 
 每个 worker 都是一个独立的 node.js 进程，其开销大约为 600ms 左右。同时会限制跨进程的数据交换。
