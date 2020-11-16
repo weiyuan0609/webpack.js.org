@@ -15,6 +15,7 @@ contributors:
   - snitin315
   - chenxsan
   - rohrlaf
+  - jamesgeorge007
 related:
   - title: webpack's automatic deduplication algorithm example
     url: https://github.com/webpack/webpack/blob/master/examples/many-pages/README.md
@@ -59,7 +60,7 @@ module.exports = {
   //...
   optimization: {
     splitChunks: {
-      chunks: 'all',
+      chunks: 'async',
       minSize: 20000,
       minRemainingSize: 0,
       maxSize: 0,
@@ -96,7 +97,7 @@ W> 从 webpack 5 开始，不再允许将条目名称传递给 `{cacheGroup}.tes
 
 ### `splitChunks.chunks` {#splitchunkschunks}
 
-`string = 'all'` `function (chunk)`
+`string = 'async'` `function (chunk)`
 
 这表明将选择哪些 chunk 进行优化。当提供一个字符串，有效值为 `all`，`async` 和 `initial`。提供 `all` 可能特别强大，因为这意味着即使在异步和非异步 chunks 之间也可以共享 chunks。
 
@@ -208,11 +209,11 @@ T> 设置 `maxSize` 的值会同时设置 `maxAsyncSize` 和 `maxInitialSize` �
 
 ### `splitChunks.name` {#splitchunksname}
 
-`boolean = true` `function (module, chunks, cacheGroupKey) => string` `string`
+`boolean = false` `function (module, chunks, cacheGroupKey) => string` `string`
 
 每个 cacheGroup 也可以使用： `splitChunks.cacheGroups.{cacheGroup}.name`。
 
-拆分 chunk 的名称。 提供 `true` 将基于 chunks 和缓存组密钥自动生成一个名称。
+拆分 chunk 的名称。 提供 `false` 将保持 chunk 的相同名称，因此不会不必要地更改名称。这是生产构建的建议值。
 
 提供字符串或函数使您可以使用自定义名称。指定字符串或始终返回相同字符串的函数会将所有常见模块和 vendor 合并为一个 chunk。这可能会导致更大的初始下载量并减慢页面加载速度。
 
@@ -280,6 +281,16 @@ module.exports = {
   }
 };
 ```
+
+### `splitChunks.usedExports` {#splitchunksusedexports}
+
+#### `splitChunks.cacheGroups{cacheGroup}.usedExports` {#splitchunkscachegroupscachegroupusedexports}
+
+`boolean = true`
+
+弄清哪些 export 被模块使用，以混淆 export 名称，省略未使用的 export，并生成有效的代码。
+当它为 `true` 时：分析每个运行时使用的出口，当它为 `"global"` 时：分析所有运行时的全局 export 组合）。
+
 
 ### `splitChunks.cacheGroups` {#splitchunkscachegroups}
 

@@ -14,6 +14,8 @@ contributors:
   - grgur
   - anshumanv
   - pixel-ray
+  - snitin315
+  - u01jmg3
 ---
 
 `object` `string`
@@ -144,6 +146,171 @@ module.exports = {
 };
 ```
 
+### `stats.assetsSpace` {#statsassetsspace}
+
+`number = 15`
+
+告诉 `stats` 应该显示多少个 asset 项目（将以组的方式折叠，以适应这个空间）。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    assetsSpace: 15
+  }
+};
+```
+
+### `stats.modulesSpace` {#statsmodulesspace}
+
+`number = 15`
+
+告诉 `stats` 应该显示多少个模块项目（将以组的方式折叠，以适应这个空间）。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    modulesSpace: 15
+  }
+};
+```
+
+### `stats.chunkModulesSpace` {#statschunkmodulesspace}
+
+`number = 10`
+
+告诉 `stats` 显示多少个 chunk 模块项目（将以组的方式折叠，以适应这个空间）。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    chunkModulesSpace: 15
+  }
+};
+```
+
+### `stats.nestedModulesSpace` {#statsnestedmodulesspace}
+
+`number = 10`
+
+告诉 `stats` 应该显示多少个嵌套模块的项目（将以组的方式折叠，以适应这个空间）。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    nestedModulesSpace: 15
+  }
+};
+```
+
+### `stats.cachedModules` {#statscachedmodules}
+
+`boolean = true`
+
+告诉 `stats` 是否要缓存（非内置）模块的信息。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    cachedModules: false
+  }
+};
+```
+
+### `stats.runtimeModules` {#statsruntimemodules}
+
+`boolean = true`
+
+告诉 `stats` 是否要添加运行时模块的信息。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    runtimeModules: false
+  }
+};
+```
+
+### `stats.dependentModules` {#statsdependentmodules}
+
+`boolean`
+
+告诉 `stats` 是否要展示该 chunk 依赖的其他模块的 chunk 模块。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    dependentModules: false
+  }
+};
+```
+
+### `stats.groupAssetsByChunk` {#statsgroupassetsbychunk}
+
+`boolean`
+
+告诉 `stats` 是否按照 asset 与 chunk 的关系进行分组。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    groupAssetsByChunk: false
+  }
+};
+```
+
+### `stats.groupAssetsByEmitStatus` {#statsgroupassetsbyemitstatus}
+
+`boolean`
+
+告诉 `stats` 是否按照 asset 的状态进行分组（emitted，对比 emit 或缓存）.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    groupAssetsByEmitStatus: false
+  }
+};
+```
+
+### `stats.groupAssetsByInfo` {#statsgroupassetsbyinfo}
+
+`boolean`
+
+告诉 `stats` 是否按照 asset 信息对 asset 进行分组（immutable，development。hotModuleReplacement 等）。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    groupAssetsByInfo: false
+  }
+};
+```
+
+### `stats.groupModulesByAttributes` {#statsgroupmodulesbyattributes}
+
+`boolean`
+
+告诉 `stats` 是否按模块的属性进行分组（errors，warnings，assets，optional，orphan 或者 dependent）。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    groupModulesByAttributes: false
+  }
+};
+```
+
 ### `stats.cachedAssets` {#statscachedassets}
 
 `boolean = true`
@@ -215,21 +382,6 @@ module.exports = {
   //...
   stats: {
     chunkModules: false
-  }
-};
-```
-
-### `stats.chunkRootModules` {#statschunkrootmodules}
-
-`boolean = true`
-
-告知 `stats` 是否添加关于 chunks 的根模块信息。 如果 `stats.chunks = true` 则会应用该配置.
-
-```javascript
-module.exports = {
-  //...
-  stats: {
-    chunkRootModules: false
   }
 };
 ```
@@ -328,7 +480,7 @@ module.exports = {
 
 ### `stats.entrypoints` {#statsentrypoints}
 
-`boolean = true`
+`boolean = true` `string = 'auto'`
 
 告知 `stats` 是否展示入口文件与对应的文件 bundles。
 
@@ -340,6 +492,8 @@ module.exports = {
   }
 };
 ```
+
+当 `stats.entrypoints` 被设置为 `'auto'` 时，webpack 将自动决定是否在 stats 输出中展示入口信息。
 
 ### `stats.env` {#statsenv}
 
@@ -542,21 +696,6 @@ module.exports = {
 };
 ```
 
-### `stats.maxModules` {#statsmaxmodules}
-
-`number = 15`
-
-设置最大的模块显示数量。
-
-```javascript
-module.exports = {
-  //...
-  stats: {
-    maxModules: 5
-  }
-};
-```
-
 ### `stats.modules` {#statsmodules}
 
 `boolean = true`
@@ -664,6 +803,36 @@ module.exports = {
 };
 ```
 
+### `stats.errorsCount` {#statserrorscount}
+
+`boolean = true`
+
+添加展示 errors 个数。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    errorsCount: false
+  }
+};
+```
+
+### `stats.warningsCount` {#statswarningscount}
+
+`boolean = true`
+
+添加展示 warnings 个数。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    warningsCount: false
+  }
+};
+```
+
 ### `stats.publicPath` {#statspublicpath}
 
 `boolean = true`
@@ -694,7 +863,22 @@ module.exports = {
 };
 ```
 
-### `stats.source` {#statssource}
+### `stats.relatedAssets`  {#statsrelatedassets}
+
+`boolean = false`
+
+告诉 `stats` 是否需添加与其他 assets 相关的信息（例如 assets 的 SourceMaps）。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    relatedAssets: true
+  }
+};
+```
+
+### `stats.source`  {#statssource}
 
 `boolean = false`
 
@@ -754,6 +938,51 @@ module.exports = {
 };
 ```
 
+### `stats.chunkGroupAuxiliary` {#statschunkgroupauxiliary}
+
+`boolean = true`
+
+在 chunk 组中展示辅助 asset。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    chunkGroupAuxiliary: false
+  }
+};
+```
+
+### `stats.chunkGroupChildren` {#statschunkgroupchildren}
+
+`boolean = true`
+
+显示 chunk 组的子 chunk。（例如，预置（prefetched），预加载（preloaded）的 chunk 和 asset)。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    chunkGroupChildren: false
+  }
+};
+```
+
+### `stats.chunkGroupMaxAssets` {#statschunkgroupmaxassets}
+
+`number`
+
+chunk 组中的 asset 数上限。
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    chunkGroupMaxAssets: 5
+  }
+};
+```
+
 ### `stats.warnings` {#statswarnings}
 
 `boolean = true`
@@ -787,6 +1016,9 @@ module.exports = {
   }
 };
 ```
+
+
+W> `stats.warningsFilter` 已被弃用，请改用 [`ignoreWarnings`](/configuration/other-options/#ignorewarnings)。
 
 ### `stats.chunkRelations` {#statschunkrelations}
 

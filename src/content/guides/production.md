@@ -22,6 +22,7 @@ contributors:
   - wizardofhogwarts
   - aholzner
   - EugeneHlushko
+  - snitin315
 ---
 
 在本指南中，我们将深入一些最佳实践和工具，将站点或应用程序构建到生产环境中。
@@ -124,8 +125,8 @@ __package.json__
     "description": "",
     "main": "src/index.js",
     "scripts": {
--     "start": "webpack-dev-server --open",
-+     "start": "webpack-dev-server --open --config webpack.dev.js",
+-     "start": "webpack serve --open",
++     "start": "webpack serve --open --config webpack.dev.js",
 -     "build": "webpack"
 +     "build": "webpack --config webpack.prod.js"
     },
@@ -166,7 +167,7 @@ __webpack.prod.js__
   });
 ```
 
-T> 技术上讲，`NODE_ENV` 是一个由 Node.js 暴露给执行脚本的系统环境变量。通常用于决定在开发环境与生产环境(dev-vs-prod)下，server tools(服务期工具)、build scripts(构建脚本) 和 client-side libraries(客户端库) 的行为。然而，与预期相反，在构建脚本 `webpack.config.js` 中`process.env.NODE_ENV` 并没有被设置为 `"production"`，请查看 [#2537](https://github.com/webpack/webpack/issues/2537)。因此，在 webpack 配置文件中，`process.env.NODE_ENV === 'production' ? '[name].[hash].bundle.js' : '[name].bundle.js'` 这样的条件语句，无法按照预期运行。
+T> 技术上讲，`NODE_ENV` 是一个由 Node.js 暴露给执行脚本的系统环境变量。通常用于决定在开发环境与生产环境(dev-vs-prod)下，server tools(服务期工具)、build scripts(构建脚本) 和 client-side libraries(客户端库) 的行为。然而，与预期相反，在构建脚本 `webpack.config.js` 中`process.env.NODE_ENV` 并没有被设置为 `"production"`，请查看 [#2537](https://github.com/webpack/webpack/issues/2537)。因此，在 webpack 配置文件中，`process.env.NODE_ENV === 'production' ? '[name].[contenthash].bundle.js' : '[name].bundle.js'` 这样的条件语句，无法按照预期运行。
 
 如果你正在使用像 [`react`](https://react.docchina.org/) 这样的 library，那么在添加此 DefinePlugin 插件后，你应该看到 bundle 大小显著下降。还要注意，任何位于 `/src` 的本地代码都可以关联到 process.env.NODE_ENV 环境变量，所以以下检查也是有效的：
 
@@ -199,7 +200,6 @@ webpack v4+ will minify your code by default in [`production mode`](/configurati
 
 注意，虽然生产环境下默认使用 [`TerserPlugin`](/plugins/terser-webpack-plugin) ，并且也是代码压缩方面比较好的选择，但是还有一些其他可选择项。以下有几个同样很受欢迎的插件：
 
-- [`BabelMinifyWebpackPlugin`](https://github.com/webpack-contrib/babel-minify-webpack-plugin)
 - [`ClosureWebpackPlugin`](https://github.com/webpack-contrib/closure-webpack-plugin)
 
 如果决定尝试一些其他压缩插件，只要确保新插件也会按照 [tree shake](/guides/tree-shaking) 指南中所陈述的具有删除未引用代码(dead code)的能力，并将它作为 [`optimization.minimizer`](/configuration/optimization/#optimization-minimizer)。

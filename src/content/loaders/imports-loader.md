@@ -108,7 +108,7 @@ const myLib = require(`imports-loader?type=commonjs&imports[]=single|jquery|$&im
 ```
 
 ```js
-const myLib = require(`imports-loader?type=commonjs&imports=single|myLib|myMethod&&wrapper=window&!./example.js`);
+const myLib = require(`imports-loader?type=commonjs&imports=single|myLib|myMethod&wrapper=window&!./example.js`);
 // `|` is separator in a query string, equivalently `single|myLib|myMethod` and `angular`
 // Adds the following code to the example.js:
 //
@@ -617,6 +617,52 @@ Generate output:
 import $ from 'jquery';
 
 (function (myVariable, myOtherVariable) {
+  // ...
+  // Code
+  // ...
+}.call(window, myVariable, myOtherVariable));
+```
+
+#### `Object` with different parameter names {#object-with-different-parameter-names}
+
+**webpack.config.js**
+
+```js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: require.resolve('example.js'),
+        use: [
+          {
+            loader: 'imports-loader',
+            options: {
+              imports: {
+                moduleName: 'jquery',
+                name: '$',
+              },
+              wrapper: {
+                thisArg: 'window',
+                args: {
+                  myVariable: 'var1',
+                  myOtherVariable: 'var2',
+                },
+              },
+            },
+          },
+        ],
+      },
+    ],
+  },
+};
+```
+
+Generate output:
+
+```js
+import $ from 'jquery';
+
+(function (var1, var2) {
   // ...
   // Code
   // ...

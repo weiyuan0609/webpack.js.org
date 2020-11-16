@@ -49,6 +49,8 @@ module.exports = {
 
 > ℹ️ If you want `webpack-dev-server` to write files to the output directory during development, you can force it with the [`writeToDisk`](https://github.com/webpack/webpack-dev-middleware#writetodisk) option or the [`write-file-webpack-plugin`](https://github.com/gajus/write-file-webpack-plugin).
 
+> ℹ️ You can get the original source filename from [Asset Objects](/api/stats/#asset-objects).
+
 ## Options {#options}
 
 The plugin's signature:
@@ -81,6 +83,7 @@ module.exports = {
 |               [`to`](#to)               |         `{String}`          |            `compiler.options.output`            | Output path.                                                                                          |
 |          [`context`](#context)          |         `{String}`          | `options.context \|\| compiler.options.context` | A path that determines how to interpret the `from` path.                                              |
 |      [`globOptions`](#globoptions)      |         `{Object}`          |                   `undefined`                   | [Options][glob-options] passed to the glob pattern matching library including `ignore` option.        |
+|           [`filter`](#filter)           |        `{Function}`         |                   `undefined`                   | Allows to filter copied assets.                                                                       |
 |           [`toType`](#totype)           |         `{String}`          |                   `undefined`                   | Determinate what is `to` option - directory, file or template.                                        |
 |            [`force`](#force)            |         `{Boolean}`         |                     `false`                     | Overwrites files already in `compilation.assets` (usually added by other plugins/loaders).            |
 |          [`flatten`](#flatten)          |         `{Boolean}`         |                     `false`                     | Removes all directory references and only copies file names.                                          |
@@ -270,6 +273,41 @@ module.exports = {
             dot: true,
             gitignore: true,
             ignore: ['**/file.*', '**/ignored-directory/**'],
+          },
+        },
+      ],
+    }),
+  ],
+};
+```
+
+#### `filter` {#filter}
+
+Type: `Function`
+Default: `undefined`
+
+> ℹ️ To ignore files by path please use the [`globOptions.ignore`](https://github.com/webpack-contrib/copy-webpack-plugin/blob/master/(#globoptions) option.
+
+**webpack.config.js**
+
+```js
+const fs = require('fs').promise;
+
+module.exports = {
+  plugins: [
+    new CopyPlugin({
+      patterns: [
+        {
+          from: 'public/**/*',
+          filter: async (resourcePath) => {
+            const data = await fs.promises.readFile(resourcePath);
+            const content = data.toString();
+
+            if (content === 'my-custom-content') {
+              return false;
+            }
+
+            return true;
           },
         },
       ],

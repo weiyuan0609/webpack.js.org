@@ -10,11 +10,12 @@ contributors:
   - EugeneHlushko
   - AnayaDesign
   - wizardofhogwarts
+  - astonizer
 ---
 
 如果你是从开始一直在沿用指南的示例，现在会有一个小项目，显示 "Hello webpack"。现在我们尝试混合一些其他资源，比如 images，看看 webpack 如何处理。
 
-在 webpack 出现之前，前端开发人员会使用 grunt 和 gulp 等工具来处理资源，并将它们从 `/src` 文件夹移动到 `/dist` 或 `/build` 目录中。JavaScript 模块也遵循同样方式，但是，像 webpack 这样的工具，将__动态打包__所有依赖（创建所谓的 [依赖图(dependency graph)](/concepts/dependency-graph)）。这是极好的创举，因为现在每个模块都可以_明确表述它自身的依赖_，可以避免打包未使用的模块。
+在 webpack 出现之前，前端开发人员会使用 [grunt](https://gruntjs.com/) 和 [gulp](https://gulpjs.com/) 等工具来处理资源，并将它们从 `/src` 文件夹移动到 `/dist` 或 `/build` 目录中。JavaScript 模块也遵循同样方式，但是，像 webpack 这样的工具，将__动态打包__所有依赖（创建所谓的 [依赖图(dependency graph)](/concepts/dependency-graph)）。这是极好的创举，因为现在每个模块都可以_明确表述它自身的依赖_，可以避免打包未使用的模块。
 
 webpack 最出色的功能之一就是，除了引入 JavaScript，还可以通过 loader _引入任何其他类型的文件_。也就是说，以上列出的那些 JavaScript 的优点（例如显式依赖），同样可以用来构建 web 站点或 web 应用程序中的所有非 JavaScript 内容。让我们从 CSS 开始起步，或许你可能已经熟悉了下面这些设置。
 
@@ -86,6 +87,10 @@ __webpack.config.js__
 +   },
   };
 ```
+
+模块 loader 可以链式调用。链中的每个 loader 都将对资源进行转换。链会逆序执行。第一个 loader 将其结果（被转换后的资源）传递给下一个 loader，依此类推。最后，webpack 期望链中的最后的 loader 返回 JavaScript。
+
+应保证 loader 的先后顺序：'style-loader' 在前，而 'css-loader' 在后。如果不遵守此约定，webpack 可能会抛出错误。
 
 T> webpack 根据正则表达式，来确定应该查找哪些文件，并将其提供给指定的 loader。在这个示例中，所有以 `.css` 结尾的文件，都将被提供给 `style-loader` 和 `css-loader`。
 
@@ -434,6 +439,7 @@ __project__
     |- index.html
   |- /src
 +   |- data.xml
++   |- data.csv
     |- my-font.woff
     |- my-font.woff2
     |- icon.png
@@ -454,6 +460,15 @@ __src/data.xml__
 </note>
 ```
 
+__src/data.csv__
+
+``` csv
+to,from,heading,body
+Mary,John,Reminder,Call Cindy on Tuesday
+Zoe,Bill,Reminder,Buy orange juice
+Autumn,Lindsey,Letter,I miss you
+```
+
 现在，你可以 `import` 这四种类型的数据(JSON, CSV, TSV, XML)中的任何一种，所导入的 `Data` 变量，将包含可直接使用的已解析 JSON：
 
 __src/index.js__
@@ -463,6 +478,7 @@ __src/index.js__
   import './style.css';
   import Icon from './icon.png';
 + import Data from './data.xml';
++ import Notes from './data.csv';
 
   function component() {
     const element = document.createElement('div');
@@ -478,6 +494,7 @@ __src/index.js__
     element.appendChild(myIcon);
 
 +   console.log(Data);
++   console.log(Notes);
 
     return element;
   }
@@ -499,6 +516,113 @@ import data from './data.json';
 import { foo } from './data.json';
 ```
 
+### 自定义 JSON 模块 parser {#customize-parser-of-json-modules}
+
+通过使用 [自定义 parser](/configuration/module/#ruleparserparse) 替代特定的 webpack loader，可以将任何 `toml`、`yaml` 或 `json5` 文件作为 JSON 模块导入。
+
+假设你在 `src` 文件夹下有一个 `data.toml`、一个 `data.yaml` 以及一个 `data.json5` 文件：
+
+__src/data.toml__
+
+```toml
+title = "TOML Example"
+
+[owner]
+name = "Tom Preston-Werner"
+organization = "GitHub"
+bio = "GitHub Cofounder & CEO\nLikes tater tots and beer."
+dob = 1979-05-27T07:32:00Z
+```
+
+__src/data.yaml__
+
+```yaml
+title: YAML Example
+owner:
+  name: Tom Preston-Werner
+  organization: GitHub
+  bio: |-
+    GitHub Cofounder & CEO
+    Likes tater tots and beer.
+  dob: 1979-05-27T07:32:00.000Z
+```
+
+__src/data.json5__
+
+```json5
+{
+  // comment
+  title: "JSON5 Example",
+  owner: {
+    name: "Tom Preston-Werner",
+    organization: "GitHub",
+    bio: "GitHub Cofounder & CEO\n\
+Likes tater tots and beer.",
+    dob: "1979-05-27T07:32:00.000Z"
+  }
+}
+```
+
+首先安装 `toml`，`yamljs` 和 `json5` 的 packages：
+
+```bash
+npm install toml yamljs json5 --save-dev
+```
+
+并在你的 webpack 中配置它们：
+
+__webpack.config.js__
+
+```javascript
+const toml = require('toml'); 
+const yaml = require('yamljs');
+const json5 = require('json5');
+module.exports = {
+  // ...
+  module: {
+    rules: [
+      {
+        test: /\.toml$/,
+        type: 'json',
+        parser: {
+          parse: toml.parse
+        }
+      },
+      {
+        test: /\.yaml$/,
+        type: 'json',
+        parser: {
+          parse: yaml.parse
+        }
+      },
+      {
+        test: /\.json5$/,
+        type: 'json',
+        parser: {
+          parse: json5.parse
+        }
+      }
+    ]
+  }
+};
+```
+
+__src/index.js__
+
+```javascript
+import toml from './data.toml';
+import yaml from './data.yaml';
+import json from './data.json5';
+
+console.log(toml.title); // output `TOML Example`
+console.log(toml.owner.name); // output `Tom Preston-Werner`
+
+console.log(yaml.title); // output `YAML Example`
+console.log(yaml.owner.name); // output `Tom Preston-Werner`
+
+console.log(json.title); // output `JSON5 Example`
+console.log(json.owner.name); // output `Tom Preston-Werner`
+```
 
 ## 全局资源 {#global-assets}
 
@@ -534,6 +658,7 @@ __project__
     |- index.html
   |- /src
 -   |- data.xml
+-   |- data.csv
 -   |- my-font.woff
 -   |- my-font.woff2
 -   |- icon.png
@@ -598,6 +723,7 @@ __src/index.js__
 - import './style.css';
 - import Icon from './icon.png';
 - import Data from './data.xml';
+- import Notes from './data.csv';
 -
   function component() {
     const element = document.createElement('div');
@@ -613,6 +739,7 @@ __src/index.js__
 -   element.appendChild(myIcon);
 -
 -   console.log(Data);
+-   console.log(Notes);
 
     return element;
   }

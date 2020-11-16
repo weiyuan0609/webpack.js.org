@@ -15,6 +15,7 @@ contributors:
   - beejunk
   - EugeneHlushko
   - chenxsan
+  - pranshuchittora
 ---
 
 `externals` 配置选项提供了「从输出的 bundle 中排除依赖」的方法。相反，所创建的 bundle 依赖于那些存在于用户环境(consumer's environment)中的依赖。此功能通常对 __library 开发人员__来说是最有用的，然而也会有各种各样的应用程序用到它。
@@ -96,7 +97,7 @@ import fs from 'fs-extra';
 const fs = require('fs-extra');
 ```
 
-### 字符串数组 {#string}
+### `[string]` {#string}
 
 ```javascript
 module.exports = {
@@ -300,9 +301,9 @@ W> [Default type](/configuration/externals/#externalstype) will be used if you s
 
 `string = 'var'`
 
-Specifies the default type of externals. `amd`, `umd`, `system` and `jsonp` externals __depend on the [`output.libraryTarget`](/configuration/output/#outputlibrarytarget)__ being set to the same value e.g. you can only consume `amd` externals within an `amd` library.
+指定 externals 的默认类型。当 external 被设置为 `amd`，`umd`，`system` 以及 `jsonp` 时，**[`output.libraryTarget`](/configuration/output/#outputlibrarytarget)** 的值也应相同。例如，你只能在 `amd` 库中使用 `amd` 的 externals。
 
-Supported types:
+支持的类型如下：
 
 - `'var'`
 - `'module'`
@@ -319,8 +320,9 @@ Supported types:
 - `'umd2'`
 - `'jsonp'`
 - `'system'`
-- `'promise'` - same as `'var'` but awaits the result (async module, depends on [`experiments.importAsync`](/configuration/experiments/))
-- `'import'` - uses `import()` to load a native EcmaScript module (async module, depends on [`experiments.importAsync`](/configuration/experiments/))
+- `'promise'` - 与 `'var'` 相同，但会 awaits 结果（适用于 async 模块）
+- `'import'` - 使用 `import()` 加载原生的 EcmaScript 模块（适用于 async 模块）
+- `'script'` - 使用 HTML 的 `<script>` 元素加载 script，用于暴露预定义的全局变量
 
 __webpack.config.js__
 
@@ -328,5 +330,115 @@ __webpack.config.js__
 module.exports = {
   //...
   externalsType: 'promise'
+};
+```
+
+### `script` {#script}
+
+External script can be loaded from any URL when [`externalsType`](#externalstype) is set to `'script'`. The `<script>` tag would be removed after the script has been loaded.
+
+#### Syntax {#syntax}
+
+```javascript
+module.exports = {
+  externals: {
+    packageName: ['http://example.com/script.js', 'global', 'property', 'property'] // properties are optional
+  }
+};
+```
+
+如果你不打算定义任何熟悉，你可以使用简写形式：
+
+```javascript
+module.exports = {
+  externals: {
+    packageName: 'global@http://example.com/script.js' // no properties here
+  }
+};
+```
+
+T> [`output.publicPath`](/configuration/output/#outputpublicpath) 不会被添加到提供的 URL 中。
+
+#### 示例 {#example}
+
+从 CDN 加载 `lodash`：
+
+__webpack.config.js__
+
+```js
+module.exports = {
+  // ...
+  externalsType: 'script',
+  externals: {
+    lodash: ['https://cdn.jsdelivr.net/npm/lodash@4.17.19/lodash.min.js', '_'],
+  }
+};
+```
+
+然后，代码中使用方式如下：
+
+```js
+import _ from 'lodash';
+console.log(_.head([1, 2, 3]));
+```
+
+下面示例是针对上面示例新增了属性配置：
+
+```js
+module.exports = {
+  // ...
+  externalsType: 'script',
+  externals: {
+    lodash: ['https://cdn.jsdelivr.net/npm/lodash@4.17.19/lodash.min.js', '_', 'head'],
+  }
+};
+```
+
+当你 `import 'loadsh'` 时，局部变量 `head` 和全局变量 `window._` 都会被暴露：
+
+```js
+import head from 'lodash';
+console.log(head([1, 2, 3])); // logs 1 here
+console.log(window._.head(['a', 'b'])); // logs a here
+```
+
+T> 当加载带有 HTML `<script>` 标签的代码时，webpack 的 runtime 将试图寻找一个已经存在的 `<script>` 标签，此标签需与 `src` 的属性相匹配，或者具有特定的 `data-webpack` 属性。对于 chunk 加载来说，`data-webpack` 属性的值为 `'[output.uniqueName]:chunk-[chunkId]'`，而 external 脚本的值为 `'[output.uniqueName]:[global]'`。
+
+T> 像 `output.chunkLoadTimeout`，`output.crossOriginLoading` 以及 `output.scriptType` 等选项也会对这种方式加载的 external 脚本产生影响。
+
+## `externalsPresets` {#externals-presets}
+
+`object`
+
+为特定的 target 启用 externals 的 preset。
+
+W> 在早期的 webpack 版本中，通过使用 [`target`](/configuration/target/) 实现以下功能。
+
+
+
+选项   | 描述                                      | 输入类型
+----------- | ------------------------------------------------ | ----------
+`electron`     | 将 main 和预加载上下文中常见的 electron 内置模块视为 external 模块（如 `electron`，`ipc` 或 `shell`），使用时通过 `require()` 加载。                     | boolean
+`electronMain`     | 将 main 上下文中的 electron 内置模块视为 external 模块（如 `app`，`ipc-main` 或 `shell`），使用时通过 `require()` 加载。                     | boolean
+`electronPreload`     | 将预加载上下文的 electron 内置模块视为 external 模块（如 `web-frame`，`ipc-renderer` 或 `shell`），使用时通过 `require()` 加载。                     | boolean
+`electronRenderer`     | 将 renderer 上下文的 electron 内置模块视为 external 模块（如 `web-frame`、`ipc-renderer` 或 `shell`），使用时通过 `require()` 加载。                     | boolean
+`node`     | 将 node.js 的内置模块视为 external 模块（如 `fs`，`path` 或 `vm`），使用时通过 `require()` 加载。| boolean
+`nwjs`    | 将 `NW.js` 遗留的 `nw.gui` 模块视为 external 模块，使用时通过 `require()` 加载。| boolean
+`web`     | 将 `http(s)://...` 以及 `std:...` 视为 external 模块，使用时通过 `import` 加载。__（注意，这将改变执行顺序，因为 external 代码会在该块中的其他代码执行前被执行）__。| boolean
+`webAsync`     | 将 `http(s)://...` 以及 `std:...` 的引用视为 external 模块，使用时通过 `async import()` 加载。__（注意，此 external 类型为 `async` 模块，它对执行会产生各种副作用）__。| boolean
+
+
+__示例__
+
+使用 `node` 的 preset 不会构建内置模块，而会将其视为 external 模块，使用时通过 `require()` 加载。
+
+__webpack.config.js__
+
+```js
+module.exports = {
+  // ...
+  externalsPresets:{
+    node: true
+  }
 };
 ```

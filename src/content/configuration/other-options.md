@@ -14,6 +14,7 @@ contributors:
   - niravasher
   - Neob91
   - chenxsan
+  - u01jmg3
 related:
   - title: 使用 Records
     url: https://survivejs.com/webpack/optimizing/separating-manifest/#using-records
@@ -174,6 +175,8 @@ module.exports = {
 
 `[string] = ['./node_modules']`
 
+W> Moved to [snapshot.managedPaths](#managedpaths)
+
 `cache.managedPaths` is an array of package-manager only managed paths. webpack will avoid hashing and timestamping them, assume the version is unique and will use it as a snapshot (for both memory and filesystem cache).
 
 ### `cache.hashAlgorithm` {#cachehashalgorithm}
@@ -279,7 +282,7 @@ module.exports = {
 };
 ```
 
-W> `cache.idleTimeout` 仅当 [`cache.store`](#cachestore) 设置成 `'pack'` 或 `'idle'` 才可配置。
+W> `cache.idleTimeout` 仅当 [`cache.store`](#cachestore) 设置成 `'pack'` 才可配置。
 
 ### `cache.idleTimeoutForInitialStore` {#cacheidletimeoutforinitialstore}
 
@@ -293,21 +296,73 @@ __webpack.config.js__
 module.exports = {
   //..
   cache: {
-    idleTimoutForInitialStore: 0
+    idleTimeoutForInitialStore: 0
   }
 };
 ```
 
-W> `cache.idleTimeoutForInitialStore` 仅当 [`cache.store`](#cachestore) 设置成 `'pack'` 或 `'idle'` 才可配置。
+W> `cache.idleTimeoutForInitialStore` 仅当 [`cache.store`](#cachestore) 设置成 `'pack'` 才可配置。
+
+## `ignoreWarnings` {#ignorewarnings}
+
+`RegExp` `function (WebpackError, Compilation) => boolean` `{module?: RegExp, file?: RegExp, message?: RegExp}`
+
+告诉 webpack 忽略掉特定的警告。类型可以是 `RegExp`，可以是自定义 `function`。如果类型为函数，可基于原始 warning 来选择性展示警告，其参数分别为 `WebpackError` 和 `Compilation`，且返回值为 `boolean`。还可以包含以下属性的 `object`：
+
+- `file`： 类型为 `RegExp`，用于选择出现警告的源文件。
+- `message`： 类型为 `RegExp`，用于选择警告的内容。
+- `module`： 类型为 `RegExp`，用于选择警告来源的模块。
+
+`ignoreWarnings` 可以是上述任意类型组成的 `array`。
+
+```javascript
+module.exports = {
+  //...
+  ignoreWarnings: [
+    {
+      module: /module2\.js\?[34]/ // A RegExp
+    },
+    {
+      module: /[13]/,
+      message: /homepage/
+    },
+    (warning) => true
+  ]
+};
+```
 
 ## `loader` {#loader}
 
 `object`
 
-在 loader 上下文中暴露自定义值。
+在 [loader 上下文](/api/loaders/#the-loader-context)中暴露自定义值。
 
-?> 添加一个例子...
+例如，你可以在 loader 上下文中定义一个新变量：
 
+__webpack.config.js__
+
+```javascript
+module.exports = {
+  // ...
+  loader: {
+    answer: 42
+  }
+};
+```
+
+然后使用 `this.answer` 在 loader 中获取该值：
+
+__custom-loader.js__
+
+```javascript
+module.exports = function (source) {
+  // ...
+  console.log(this.answer); // will log `42` here
+  return source;
+};
+```
+
+T> 你可以覆盖 loader 上下文中的属性，因为 webpack 会将所有定义在 `loader` 中的属性负责到 loader 上下文中。
 
 ## `parallelism` {#parallelism}
 
@@ -446,3 +501,90 @@ module.exports = {
   }
 };
 ```
+
+## `snapshot`
+
+`object`
+
+`snapshot` options decide how the file system snapshots are created and invalidated.
+
+__webpack.config.js__
+
+```javascript
+const path = require('path');
+module.exports = {
+  // ...
+  snapshot: {
+    managedPaths: [path.resolve(__dirname, '../node_modules')],
+    immutablePaths: [],
+    buildDependencies: {
+      hash: true,
+      timestamp: true
+    },
+    module: {
+      timestamp: true
+    },
+    resolve: {
+      timestamp: true
+    },
+    resolveBuildDependencies: {
+      hash: true,
+      timestamp: true
+    }
+  }
+};
+```
+
+### `managedPaths`
+
+`[string]`
+
+An array of paths that are managed by a package manager and can be trusted to not be modified otherwise.
+
+### `immutablePaths`
+
+`[string]`
+
+An array of paths that are managed by a package manager and contain a version or a hash in their paths so that all files are immutable.
+
+### `buildDependencies`
+
+`object = { hash boolean = true, timestamp boolean = true }`
+
+Snapshots for build dependencies when using the persistent cache.
+
+- `hash`: Compare content hashes to determine invalidation (more expensive than `timestamp`, but changes less often).
+- `timestamp`: Compare timestamps to determine invalidation.
+
+Both `hash` and `timestamp` are optional.
+
+- `{ hash: true }`: Good for CI caching with a fresh checkout which doesn't keep timestamps and uses hashes.
+- `{ timestamp: true }`: Good for local development caching.
+- `{ timestamp: true, hash: true }`: Good for both cases mentioned above. Timestamps are compared first, which is cheap because webpack doesn't need to read files to compute their hashes. Content hashes will be compared only when timestamps are the same, which leads to a small performance hit for the initial build.
+
+### `module`
+
+`object = {hash boolean = true, timestamp boolean = true}`
+
+Snapshots for building modules.
+
+- `hash`: Compare content hashes to determine invalidation (more expensive than `timestamp`, but changes less often).
+- `timestamp`: Compare timestamps to determine invalidation.
+
+### `resolve`
+
+`object = {hash boolean = true, timestamp boolean = true}`
+
+Snapshots for resolving of requests.
+
+- `hash`: Compare content hashes to determine invalidation (more expensive than `timestamp`, but changes less often).
+- `timestamp`: Compare timestamps to determine invalidation.
+
+### `resolveBuildDependencies`
+
+`object = {hash boolean = true, timestamp boolean = true}`
+
+Snapshots for resolving of build dependencies when using the persistent cache.
+
+- `hash`: Compare content hashes to determine invalidation (more expensive than `timestamp`, but changes less often).
+- `timestamp`: Compare timestamps to determine invalidation.
