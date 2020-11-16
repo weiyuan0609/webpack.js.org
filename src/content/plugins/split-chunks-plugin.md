@@ -221,8 +221,6 @@ T> 设置 `maxSize` 的值会同时设置 `maxAsyncSize` 和 `maxInitialSize` �
 
 如果 `splitChunks.name` 与 [entry point](/configuration/entry-context/#entry) 名称匹配，entry point 将被删除。
 
-T> 对于生产版本，建议将 `splitChunks.name` 设置为 `false`，以免不必要地更改名称。
-
 __main.js__
 
 ```js
