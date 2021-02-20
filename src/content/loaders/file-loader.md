@@ -16,6 +16,8 @@ repo: https://github.com/webpack-contrib/file-loader
 
 
 
+**DEPREACTED for v5**: please consider migrating to [`asset modules`](/guides/asset-modules/).
+
 The `file-loader` resolves `import`/`require()` on a file into a url and emits the file into the output directory.
 
 ## Getting Started {#getting-started}

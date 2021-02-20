@@ -1,18 +1,32 @@
 // Import External Dependencies
-import React from 'react';
+import { Children, isValidElement, Component } from 'react';
+import PropTypes from 'prop-types';
 
 // Import Components
 import PageLinks from '../PageLinks/PageLinks';
 import Markdown from '../Markdown/Markdown';
 import Contributors from '../Contributors/Contributors';
-import {PlaceholderString} from '../Placeholder/Placeholder';
+import { PlaceholderString } from '../Placeholder/Placeholder';
 import { Pre } from '../Configuration/Configuration';
 import AdjacentPages from './AdjacentPages';
 
 // Load Styling
 import './Page.scss';
 
-class Page extends React.Component {
+class Page extends Component {
+  static propTypes = {
+    title: PropTypes.string,
+    contributors: PropTypes.array,
+    related: PropTypes.array,
+    previous: PropTypes.object,
+    next: PropTypes.object,
+    content: PropTypes.oneOfType([
+      PropTypes.shape({
+        then: PropTypes.func.isRequired,
+        default: PropTypes.string,
+      }),
+    ]),
+  };
   constructor(props) {
     super(props);
 
@@ -20,8 +34,10 @@ class Page extends React.Component {
     const isDynamicContent = content instanceof Promise;
 
     this.state = {
-      content: isDynamicContent ? PlaceholderString() : content.default || content,
-      contentLoaded: isDynamicContent ? false : true
+      content: isDynamicContent
+        ? PlaceholderString()
+        : content.default || content,
+      contentLoaded: isDynamicContent ? false : true,
     };
   }
 
@@ -30,34 +46,43 @@ class Page extends React.Component {
 
     if (content instanceof Promise) {
       content
-        .then(module =>
-          this.setState({
-            content: module.default || module,
-            contentLoaded: true
-          }, () => {
-            const hash = window.location.hash;
-            if (hash) {
-              const newHash = decodeURIComponent(hash);
-              const element = document.querySelector(newHash);
-              if (element) {
-                element.scrollIntoView();
+        .then((module) =>
+          this.setState(
+            {
+              content: module.default || module,
+              contentLoaded: true,
+            },
+            () => {
+              const hash = window.location.hash;
+              if (hash) {
+                const newHash = decodeURIComponent(hash);
+                const element = document.querySelector(newHash);
+                if (element) {
+                  element.scrollIntoView();
+                }
+              } else {
+                window.scrollTo(0, 0);
               }
-            } else {
-              window.scrollTo(0, 0);
             }
-
-          })
+          )
         )
-        .catch(error =>
+        .catch(() =>
           this.setState({
-            content: 'Error loading content.'
+            content: 'Error loading content.',
           })
         );
     }
   }
 
   render() {
-    const { title, contributors = [], related = [], previous, next, ...rest } = this.props;
+    const {
+      title,
+      contributors = [],
+      related = [],
+      previous,
+      next,
+      ...rest
+    } = this.props;
 
     const { contentLoaded } = this.state;
     const loadRelated = contentLoaded && related && related.length !== 0;
@@ -70,9 +95,10 @@ class Page extends React.Component {
 
     if (typeof content === 'function') {
       contentRender = content({}).props.children.slice(4); // Cut frontmatter information
-      contentRender = React.Children.map(contentRender, child => {
-        if (React.isValidElement(child)) {
+      contentRender = Children.map(contentRender, (child) => {
+        if (isValidElement(child)) {
           if (child.props.mdxType === 'pre') {
+            // eslint-disable-next-line
             return <Pre children={child.props.children} />;
           }
         }
@@ -83,7 +109,7 @@ class Page extends React.Component {
       contentRender = (
         <div
           dangerouslySetInnerHTML={{
-            __html: this.state.content
+            __html: this.state.content,
           }}
         />
       );
@@ -98,9 +124,9 @@ class Page extends React.Component {
 
           {contentRender}
 
-          {
-            (previous || next) && <AdjacentPages previous={previous} next={next} />
-          }
+          {(previous || next) && (
+            <AdjacentPages previous={previous} next={next} />
+          )}
 
           {loadRelated && (
             <div className="related__section">

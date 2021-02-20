@@ -42,7 +42,7 @@ Then add the loader to your `webpack` config. For example:
 
 ```js
 module.exports = (options, loaderContext) => {
-  return { code: 'module.exports = 42;' };
+  return { code: "module.exports = 42;" };
 };
 ```
 
@@ -68,10 +68,75 @@ module.exports = {
 **src/entry.js**
 
 ```js
-const answer = require('target-file');
+const answer = require("target-file");
 ```
 
 And run `webpack` via your preferred method.
+
+## Options {#options}
+
+|                  Name                   |    Type    |   Default   | Description                                   |
+| :-------------------------------------: | :--------: | :---------: | :-------------------------------------------- |
+| **[`executableFile`](#executablefile)** | `{String}` | `undefined` | Allows to specify path to the executable file |
+
+### executableFile {#executablefile}
+
+Type: `String`
+Default: `undefined`
+
+Allows to specify path to the executable file
+
+**data.json**
+
+```json
+{
+  "years": "10"
+}
+```
+
+**executable-file.js**
+
+```js
+module.exports = function yearsInMs(options, loaderContext, content) {
+  const { years } = JSON.parse(content);
+  const value = years * 365 * 24 * 60 * 60 * 1000;
+
+  return {
+    cacheable: true,
+    code: "module.exports = " + value,
+  };
+};
+```
+
+**webpack.config.js**
+
+```js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.(json)$/i,
+        rules: [
+          {
+            loader: "val-loader",
+            options: {
+              executableFile: path.resolve(
+                __dirname,
+                "fixtures",
+                "executableFile.js"
+              ),
+            },
+          },
+        ],
+      },
+      {
+        test: /\.json$/i,
+        type: "asset/resource",
+      },
+    ],
+  },
+};
+```
 
 ## Return Object Properties {#return-object-properties}
 
@@ -108,8 +173,7 @@ next loader uses the same AST.
 Type: `Array[String]`
 Default: `[]`
 
-An array of absolute, native paths to file dependencies that should be watched
-by webpack for changes.
+An array of absolute, native paths to file dependencies that should be watched by webpack for changes.
 
 Dependencies can also be added using [`loaderContext.addDependency(file: string)`](/api/loaders/#thisadddependency).
 
@@ -118,10 +182,18 @@ Dependencies can also be added using [`loaderContext.addDependency(file: string)
 Type: `Array[String]`
 Default: `[]`
 
-An array of absolute, native paths to directory dependencies that should be
-watched by webpack for changes.
+An array of absolute, native paths to directory dependencies that should be watched by webpack for changes.
 
 Context dependencies can also be added using [`loaderContext.addContextDependency(directory: string)`](/api/loaders/#thisaddcontextdependency).
+
+### `buildDependencies` {#builddependencies}
+
+Type: `Array[String]`
+Default: `[]`
+
+An array of absolute, native paths to directory dependencies that should be watched by webpack for changes.
+
+Build dependencies can also be added using `loaderContext.addBuildDependency(file: string)`.
 
 ### `cacheable` {#cacheable}
 
@@ -149,7 +221,7 @@ module.exports = function yearsInMs({ years }) {
   // NOTE: this return value will replace the module in the bundle
   return {
     cacheable: true,
-    code: 'module.exports = ' + value,
+    code: "module.exports = " + value,
   };
 };
 ```
@@ -161,10 +233,10 @@ module.exports = {
   module: {
     rules: [
       {
-        test: require.resolve('src/years-in-ms.js'),
+        test: require.resolve("src/years-in-ms.js"),
         use: [
           {
-            loader: 'val-loader',
+            loader: "val-loader",
             options: {
               years: 10,
             },
@@ -179,7 +251,7 @@ module.exports = {
 In the bundle, requiring the module then returns:
 
 ```js
-import tenYearsMs from 'years-in-ms';
+import tenYearsMs from "years-in-ms";
 
 console.log(tenYearsMs); // 315360000000
 ```
@@ -191,13 +263,13 @@ Example shows how to build [`modernizr`](https://www.npmjs.com/package/modernizr
 **entry.js**
 
 ```js
-import modenizr from './modernizr.js';
+import modenizr from "./modernizr.js";
 ```
 
 **modernizr.js**
 
 ```js
-const modernizr = require('modernizr');
+const modernizr = require("modernizr");
 
 module.exports = function (options) {
   return new Promise(function (resolve) {
@@ -215,22 +287,22 @@ module.exports = function (options) {
 **webpack.config.js**
 
 ```js
-const path = require('path');
+const path = require("path");
 module.exports = {
   module: {
     rules: [
       {
-        test: path.resolve(__dirname, 'src', 'modernizr.js'),
+        test: path.resolve(__dirname, "src", "modernizr.js"),
         use: [
           {
-            loader: 'val-loader',
+            loader: "val-loader",
             options: {
               minify: false,
-              options: ['setClasses'],
-              'feature-detects': [
-                'test/css/flexbox',
-                'test/es6/promises',
-                'test/serviceworker',
+              options: ["setClasses"],
+              "feature-detects": [
+                "test/css/flexbox",
+                "test/es6/promises",
+                "test/serviceworker",
               ],
             },
           },
@@ -248,7 +320,7 @@ Example shows how to build [`figlet`](https://www.npmjs.com/package/figlet).
 **entry.js**
 
 ```js
-import { default as figlet } from './figlet.js';
+import { default as figlet } from "./figlet.js";
 
 console.log(figlet);
 ```
@@ -256,16 +328,16 @@ console.log(figlet);
 **figlet.js**
 
 ```js
-const figlet = require('figlet');
+const figlet = require("figlet");
 
 function wrapOutput(output, config) {
-  let figletOutput = '';
+  let figletOutput = "";
 
   if (config.textBefore) {
     figletOutput += encodeURI(`${config.textBefore}\n`);
   }
 
-  output.split('\n').forEach((line) => {
+  output.split("\n").forEach((line) => {
     figletOutput += encodeURI(`${line}\n`);
   });
 
@@ -279,12 +351,12 @@ function wrapOutput(output, config) {
 module.exports = function (options) {
   const defaultConfig = {
     fontOptions: {
-      font: 'ANSI Shadow',
-      horizontalLayout: 'default',
-      kerning: 'default',
-      verticalLayout: 'default',
+      font: "ANSI Shadow",
+      horizontalLayout: "default",
+      kerning: "default",
+      verticalLayout: "default",
     },
-    text: 'FIGLET-LOADER',
+    text: "FIGLET-LOADER",
     textAfter: null,
     textBefore: null,
   };
@@ -299,7 +371,7 @@ module.exports = function (options) {
 
       resolve({
         cacheable: true,
-        code: 'module.exports = ' + wrapOutput(output, config),
+        code: "module.exports = " + wrapOutput(output, config),
       });
     });
   });
@@ -309,17 +381,17 @@ module.exports = function (options) {
 **webpack.config.js**
 
 ```js
-const path = require('path');
+const path = require("path");
 module.exports = {
   module: {
     rules: [
       {
-        test: path.resolve(__dirname, 'src', 'figlet.js'),
+        test: path.resolve(__dirname, "src", "figlet.js"),
         use: [
           {
-            loader: 'val-loader',
+            loader: "val-loader",
             options: {
-              text: 'FIGLET',
+              text: "FIGLET",
             },
           },
         ],

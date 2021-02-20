@@ -16,6 +16,8 @@ repo: https://github.com/webpack-contrib/raw-loader
 
 
 
+**DEPREACTED for v5**: please consider migrating to [`asset modules`](/guides/asset-modules/).
+
 A loader for webpack that allows importing files as a String.
 
 ## Getting Started {#getting-started}

@@ -11,57 +11,51 @@ const contentTree = require('./src/_content.json');
 
 // Load Common Configuration
 const common = require('./webpack.common.js');
+const PrecacheSsgManifestPlugin = require('./src/PrecacheSsgManifestPlugin');
 
 // content tree to path array
-const paths = [
-  ...flattenContentTree(contentTree),
-  '/vote',
-  '/organization',
-  '/starter-kits',
-  '/app-shell'
-];
+const paths = [...flattenContentTree(contentTree), '/vote', '/app-shell'];
 
-module.exports = env => merge(common(env), {
+module.exports = (env) =>
+  merge(common(env), {
     name: 'ssg',
     mode: 'production',
     target: 'node',
     cache: {
       buildDependencies: {
         config: [__filename],
-      }
+      },
     },
     entry: {
-      index: './server.jsx'
+      index: './server.jsx',
     },
     output: {
-      filename: '.server/[name].js',
-      libraryTarget: 'umd'
+      filename: '.server/[name].[contenthash].js',
+      libraryTarget: 'umd',
     },
     optimization: {
-      minimizer: [
-        new OptimizeCSSAssetsPlugin({})
-      ]
+      minimizer: [new OptimizeCSSAssetsPlugin({})],
     },
     plugins: [
       new SSGPlugin({
         globals: {
           window: {
-            __ssgrun: true
-          }
+            __ssgrun: true,
+          },
         },
         paths,
         locals: {
-          content: contentTree
-        }
+          content: contentTree,
+        },
       }),
       new RedirectWebpackPlugin({
         redirects: {
-          'support': '/contribute/',
+          support: '/contribute/',
           'writers-guide': '/contribute/writers-guide/',
           'get-started': '/guides/getting-started/',
           'get-started/install-webpack': '/guides/installation/',
           'get-started/why-webpack': '/guides/why-webpack/',
-          'pluginsapi': '/api/plugins/',
+          pluginsapi: '/api/plugins/',
           'pluginsapi/compiler': '/api/compiler-hooks/',
           'pluginsapi/template': '/api/template/',
           'api/passing-a-config': '/configuration/configuration-types/',
@@ -72,7 +66,7 @@ module.exports = env => merge(common(env), {
           'api/plugins/tapable': '/api/tapable/',
           'api/plugins/template': '/api/template/',
           'api/plugins/resolver': '/api/resolver/',
-          'development': '/contribute/',
+          development: '/contribute/',
           'development/plugin-patterns': '/contribute/plugin-patterns/',
           'development/release-process': '/contribute/release-process/',
           'development/how-to-write-a-loader': '/contribute/writing-a-loader/',
@@ -84,32 +78,33 @@ module.exports = env => merge(common(env), {
           'guides/code-splitting-libraries': '/guides/code-splitting/',
           'guides/why-webpack': '/comparison/',
           'guides/production-build': '/guides/production/',
-          'migrating': '/migrate/3/',
-          'plugins/no-emit-on-errors-plugin': '/configuration/optimization/#optimizationemitonerrors',
-          'concepts/mode': '/configuration/mode'
-        }
+          migrating: '/migrate/3/',
+          'plugins/no-emit-on-errors-plugin':
+            '/configuration/optimization/#optimizationemitonerrors',
+          'concepts/mode': '/configuration/mode',
+        },
       }),
       new CopyWebpackPlugin({
         patterns: [
           {
             from: './assets/icon-square-small-slack.png',
-            to: './assets/'
+            to: './assets/',
           },
           {
             from: './assets/icon-square-big.svg',
-            to: './assets/'
+            to: './assets/',
           },
           {
             from: './assets/robots.txt',
-            to: './'
+            to: './',
           },
-          'CNAME'
-        ]
+          'CNAME',
+        ],
       }),
       new WebpackPwaManifest({
-        name: 'webpack Documentation',
+        name: 'webpack 中文文档',
         short_name: 'webpack',
-        description: 'webpack documentation web application',
+        description: 'webpack 中文文档 web 应用',
         background_color: '#2b3a42',
         theme_color: '#2b3a42',
         display: 'fullscreen',
@@ -131,5 +126,6 @@ module.exports = env => merge(common(env), {
           },
         ],
       }),
-    ]
+      new PrecacheSsgManifestPlugin(),
+    ],
   });

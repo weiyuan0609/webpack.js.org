@@ -1,20 +1,29 @@
-import React from 'react';
-import Link from '../Link/Link';
+import { Component } from 'react';
 import './SidebarItem.scss';
 import list2Tree from '../../utilities/list2Tree';
+import ChevronRightIcon from '../../styles/icons/chevron-right.svg';
+import BarIcon from '../../styles/icons/vertical-bar.svg';
+import PropTypes from 'prop-types';
+import { NavLink } from 'react-router-dom';
 
 const block = 'sidebar-item';
 
-export default class SidebarItem extends React.Component {
+export default class SidebarItem extends Component {
+  static propTypes = {
+    title: PropTypes.string,
+    anchors: PropTypes.array,
+    url: PropTypes.string,
+    currentPage: PropTypes.string,
+  };
   state = {
-    open: this._isOpen(this.props)
+    open: this._isOpen(this.props),
   };
 
   renderAnchors(anchors) {
     return (
       <ul className={`${block}__anchors`}>
         {
-          anchors.map((anchor, i) => {
+          anchors.map((anchor) => {
             anchor = this._handleAnchor(anchor);
             return (<li
               key={this._generateAnchorURL(anchor)}
@@ -42,45 +51,58 @@ export default class SidebarItem extends React.Component {
     return anchor;
   }
 
-  scrollTop() {
-    window.scrollTo(0, 0);
+  scrollTop(event) {
+    if (!event.metaKey && !event.ctrlKey) {
+      window.scrollTo(0, 0);
+    }
   }
 
   render() {
-    let {title, anchors = []} = this.props;
+    let { title, anchors = [] } = this.props;
     let openMod = this.state.open ? `${block}--open` : '';
     let disabledMod = anchors.length == 0 ? `${block}--disabled` : '';
 
-    const filteredAnchors = anchors.filter(anchor => anchor.level > 1);
+    const filteredAnchors = anchors.filter((anchor) => anchor.level > 1);
     const tree = list2Tree(filteredAnchors);
-    
+
     return (
       <div className={`${block} ${openMod} ${disabledMod}`}>
         {anchors.length > 0 ? (
-          <i
-            className={`${block}__toggle icon-chevron-right`}
-            onClick={this._toggle.bind(this)} />
+          <ChevronRightIcon
+            width={15}
+            height={17}
+            fill="#175d96"
+            className={`${block}__toggle`}
+            onClick={this._toggle.bind(this)}
+          />
         ) : (
-          <i className={`${block}__toggle icon-vertical-bar`} />
+          <BarIcon
+            className={`${block}__toggle`}
+            width={15}
+            height={17}
+            fill="#175d96"
+          />
         )}
 
-        <Link
+        <NavLink
+          exact
           key={this.props.url}
           className={`${block}__title`}
           to={this.props.url}
-          onClick={this.scrollTop}>
+          onClick={this.scrollTop}
+        >
           {title}
-        </Link>
+        </NavLink>
 
         {anchors.length > 0 ? this.renderAnchors(tree) : null}
       </div>
     );
   }
 
-  componentWillReceiveProps(nextProps) {
-    if ( nextProps.currentPage !== this.props.currentPage ) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (nextProps.currentPage !== this.props.currentPage) {
       this.setState({
-        open: this._isOpen(nextProps)
+        open: this._isOpen(nextProps),
       });
     }
   }
@@ -99,9 +121,9 @@ export default class SidebarItem extends React.Component {
    *
    * @param {object} e - Click event
    */
-  _toggle(e) {
+  _toggle() {
     this.setState({
-      open: !this.state.open
+      open: !this.state.open,
     });
   }
 
@@ -112,7 +134,7 @@ export default class SidebarItem extends React.Component {
    * @returns {string}
    */
   _generateAnchorURL(anchor) {
-    let {url} = this.props;
+    let { url } = this.props;
     return anchor.id ? `${url}#${anchor.id}` : url;
   }
 }
