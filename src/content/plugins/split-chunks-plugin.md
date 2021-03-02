@@ -30,13 +30,13 @@ related:
 
 ## 默认值 {#defaults}
 
-对于大部分用户来说，`SplitChunksPlugin` 是开箱即用的，而且很适用。
+开箱即用的 `SplitChunksPlugin` 对于大部分用户来说很好用。
 
 默认情况下，它只会影响到按需加载的 chunks，因为修改 initial chunks 会影响到项目的 HTML 文件中的脚本标签。
 
 webpack 将根据以下条件自动拆分 chunks：
 
-- 新的 chunk 可以被多个 chunk 分享，或者模块来自于 node_modules 文件夹
+- 新的 chunk 可以被共享，或者模块来自于 `node_modules` 文件夹
 - 新的 chunk 体积大于 20kb（在进行 min+gz 之前的体积）
 - 当按需加载 chunks 时，并行请求的最大数量小于或等于 30
 - 当加载初始化页面时，并发请求的最大数量小于或等于 30
@@ -85,7 +85,7 @@ module.exports = {
 };
 ```
 
-W> 当 webpack 处理文件路径时，它们始终包含 Unix 系统中的 `/` 和 Windows 系统中的 `\`。这就是为什么在 `{cacheGroup}.test` 字段中使用 `[\\/]` 来表示路径分隔符的原因。`{cacheGroup}.test` 中的 `/` 或 `\` 会在跨平台使用时引起问题。
+W> 当 webpack 处理文件路径时，它们始终包含 Unix 系统中的 `/` 和 Windows 系统中的 `\`。这就是为什么在 `{cacheGroup}.test` 字段中使用 `[\\/]` 来表示路径分隔符的原因。`{cacheGroup}.test` 中的 `/` 或 `\` 会在跨平台使用时产生问题。
 
 W> 从 webpack 5 开始，不再允许将 entry 名称传递给 `{cacheGroup}.test` 或者为 `{cacheGroup}.name` 使用现有的 chunk 的名称。
 
@@ -93,13 +93,13 @@ W> 从 webpack 5 开始，不再允许将 entry 名称传递给 `{cacheGroup}.te
 
 `string = '~'`
 
-默认情况下，webpack 将使用 chunk 的来源和名称生成名称（例如 `vendors~main.js`）。此选项使你可以指定用于生成名称的定界符。
+默认情况下，webpack 将使用 chunk 的来源和名称生成名称（例如 `vendors~main.js`）。此选项使你可以指定用于生成名称的分隔符。
 
 ### `splitChunks.chunks` {#splitchunkschunks}
 
 `string = 'async'` `function (chunk)`
 
-这表明将选择哪些 chunk 进行优化。当提供一个字符串，有效值为 `all`，`async` 和 `initial`。提供 `all` 可能特别强大，因为这意味着 chunk 可以在异步和非异步 chunk 之间共享。
+这表明将选择哪些 chunk 进行优化。当提供一个字符串，有效值为 `all`，`async` 和 `initial`。设置为 `all` 可能特别强大，因为这意味着 chunk 可以在异步和非异步 chunk 之间共享。
 
 **webpack.config.js**
 
@@ -311,13 +311,13 @@ module.exports = {
 
 `number = -20`
 
-一个模块可以属于多个缓存组。优化将优先考虑具有更高 `priority` 的缓存组 默认组的优先级为负，以允许自定义组获得更高的优先级（自定义组的默认值为 `0`）。
+一个模块可以属于多个缓存组。优化将优先考虑具有更高 `priority`（优先级）的缓存组。默认组的优先级为负，以允许自定义组获得更高的优先级（自定义组的默认值为 `0`）。
 
 #### `splitChunks.cacheGroups.{cacheGroup}.reuseExistingChunk` {#splitchunkscachegroupscachegroupreuseexistingchunk}
 
 `boolean = true`
 
-如果当前 chunk 包含已从主 bundle 中拆分出的模块，则它将被重用，而不是生成新的模块。 这可能会影响 chunk 的结果文件名。
+如果当前 chunk 包含已从主 bundle 中拆分出的模块，则它将被重用，而不是生成新的模块。这可能会影响 chunk 的结果文件名。
 
 **webpack.config.js**
 
@@ -367,7 +367,7 @@ module.exports = {
 
 控制此缓存组选择的模块。省略它会选择所有模块。它可以匹配绝对模块资源路径或 chunk 名称。匹配 chunk 名称时，将选择 chunk 中的所有模块。
 
-为 `{cacheGroup}.test` 提供一个功能：
+为 `{cacheGroup}.test` 提供一个函数：
 
 **webpack.config.js**
 
@@ -552,7 +552,7 @@ import 'react';
 //...
 ```
 
-__结果：__ 将创建一个单独的包含 `react` 的 chunk。在导入调用中，此 chunk 并行加载到包含 `./a` 的原始 chunk 中。
+**结果：** 将创建一个单独的包含 `react` 的 chunk。在导入调用中，此 chunk 并行加载到包含 `./a` 的原始 chunk 中。
 
 为什么：
 
@@ -588,7 +588,7 @@ import './more-helpers'; // more-helpers is also 40kb in size
 //...
 ```
 
-__结果：__ 将创建一个单独的 chunk，其中包含 `./helpers` 及其所有依赖项。在导入调用时，此 chunk 与原始 chunks 并行加载。
+**结果：** 将创建一个单独的 chunk，其中包含 `./helpers` 及其所有依赖项。在导入调用时，此 chunk 与原始 chunks 并行加载。
 
 为什么：
 
